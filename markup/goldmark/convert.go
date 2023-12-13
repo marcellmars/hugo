@@ -35,6 +35,7 @@ import (
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/text"
+	"github.com/yuin/goldmark/util"
 )
 
 const (
@@ -134,7 +135,20 @@ func newMarkdown(pcfg converter.ProviderConfig) goldmark.Markdown {
 	}
 
 	if cfg.Extensions.Footnote {
-		extensions = append(extensions, extension.Footnote)
+		if cfg.Extensions.FootnotePrefix {
+			f := extension.NewFootnote(
+				extension.WithFootnoteIDPrefixFunction(func(n ast.Node) []byte {
+					v, ok := n.OwnerDocument().Meta()["footnote-prefix"]
+					if ok {
+						return util.StringToReadOnlyBytes(v.(string))
+					}
+					return nil
+				}),
+			)
+			extensions = append(extensions, f)
+		} else {
+			extensions = append(extensions, extension.Footnote)
+		}
 	}
 
 	if cfg.Extensions.CJK.Enable {
@@ -230,6 +244,9 @@ func (c *goldmarkConverter) Parse(ctx converter.RenderContext) (converter.Result
 		parser.WithContext(pctx),
 	)
 
+	if c.cfg.MarkupConfig().Goldmark.Extensions.FootnotePrefix {
+		doc.OwnerDocument().Meta()["footnote-prefix"] = c.ctx.DocumentID
+	}
 	return parserResult{
 		doc: doc,
 		toc: pctx.TableOfContents(),

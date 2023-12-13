@@ -37,6 +37,7 @@ var Default = Config{
 			Apostrophe:       "&rsquo;",
 		},
 		Footnote:        true,
+		FootnotePrefix:  false,
 		DefinitionList:  true,
 		Table:           true,
 		Strikethrough:   true,
@@ -74,6 +75,7 @@ type Config struct {
 type Extensions struct {
 	Typographer    Typographer
 	Footnote       bool
+	FootnotePrefix bool
 	DefinitionList bool
 
 	// GitHub flavored markdown
